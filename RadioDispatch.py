@@ -1,6 +1,7 @@
-import winsound
-import time
-import serial
+import winsound, csv, time, serial
+
+
+# https://github.com/EvanVS/RadioDispatch
 
 # ----------< Configuration >----------
 
@@ -19,25 +20,9 @@ PTT_COM_Pin = 'RTS' # RTS or DTR pin for PTT Control
 
 print('\n-----------------------------------')
 print('KJ7BRE Communications Paging System')
-print('Version: 0.82B    Evan Vander Stoep')
+print('Version: 0.92     github.com/EvanVS')
 print('-----------------------------------\n')
 
-help_msg = """
-
-  Unit ID Numbers
---------------------
-1 - [Handheld 1]
-2 - [Handheld 2]
-3 - [Handheld 3]
-4 - [Handheld 4]
-8 - [Base 1]
-9 - [Base 2]
-10 - [Anytone 878]
-91 - [Siren Attack]
-92 - [Siren Alert]
-93 - [Siren Test/Cancel]
-
-"""
 
 if PTT_COM_Port.upper() != 'VOX':
 	ser = serial.Serial('COM5')
@@ -55,75 +40,78 @@ def PTT(state): # Transmiter Control
 	return c_state
 
 def QC2(A,B): # Quick Call II (2-Tone)
+	PTT(True)
 	winsound.Beep(A, QC2_Tone_A_Duration)
 	winsound.Beep(B, QC2_Tone_B_Duration)
 	PTT(False)
 	return True
 
 def ST(A): # Single Tone
+	PTT(True)
 	winsound.Beep(A, ST_Tone_Duration)
 	PTT(False)
 	return True
 
 def DTMF(str): # Dual Tone Multi Frequency
+	PTT(True)
 	PTT(False)
 	return True
+
+def UNIT(x):
+	global unit_id
+	global unit_name
+	global unit_signal_type
+	global unit_tone_a
+	global unit_tone_b
+	if user_input.lower() != 'help':
+		with open('units.csv', 'r') as csv_file:
+			units = csv.reader(csv_file)
+			for unit in units:
+				if unit[0] == x:
+					unit_id = unit[0]
+					unit_name = unit[1]
+					unit_signal_type = unit[2]
+					unit_tone_a = unit[3]
+					unit_tone_b = unit[4]
+					unit_tone_a = int(unit_tone_a)
+					unit_tone_b = int(unit_tone_b)
+					return True
+			return False
+	return False
+
+def HELP():
+	print('              Unit List')
+	print("-----------------------------------")
+	with open('units.csv', 'r') as csv_file:
+		units = csv.reader(csv_file)
+		for unit in units:
+			unit_id = unit[0]
+			unit_name = unit[1]
+			unit_signal_type = unit[2]
+			unit_tone_a = unit[3]
+			unit_tone_b = unit[4]
+			print(f'[ID: {unit_id}][Name: {unit_name}]')
+
 
 while True:
 	sent = False
 	print("Command or Unit ID:")
-	unit = input()
-	if unit.lower() != 'help':
-		print(f"[Paging][ID: {unit}]")
-	
+	user_input = input()
+	valid_id = UNIT(user_input)
 
-
-	# if unit == '{UNIT ID NUMBER}':
-	# 	PTT(True)
-	# 	sent = QC2(950, 425) # First number = Tone A. Second number = Tone B.
-	# 	print('[Page Sent][Unit {UNIT ID NUMBER}][{UNIT NAME}]')
-
-	if unit == '1':
-		PTT(True)
-		sent = QC2(950, 425)
-		print('[Page Sent][Unit 1][Handheld 1]')
-	elif unit == '2':
-		PTT(True)
-		sent = QC2(350, 485)
-		print('[Page Sent][Unit 2][Handheld 2]')
-	elif unit == '3':
-		PTT(True)
-		sent = QC2(800, 450)
-		print('[Page Sent][Unit 3][Handheld 3]')
-	elif unit == '4':
-		PTT(True)
-		sent = QC2(650, 375)
-		print('[Page Sent][Unit 4][Handheld 4]')
-	elif unit == '8':
-		PTT(True)
-		sent = QC2(750, 525)
-		print('[Page Sent][Unit 8][Base 1]')
-	elif unit == '9':
-		PTT(True)
-		sent = QC2(700, 450)
-		print('[Page Sent][Unit 9][Base 2]')
-	elif unit == '10':
-		PTT(True)
-		sent = QC2(725, 650)
-		print('[Page Sent][Unit 10][Anytone 878]')
-	elif unit == '91':
-		PTT(True)
-		sent = QC2(350, 490)
-		print('[Page Sent][Siren Alert]')
-	elif unit == '92':
-		PTT(True)
-		sent = QC2(350, 555)
-		print('[Page Sent][Siren Attack]')
-	elif unit == '93':
-		sent = QC2(350, 625)
-		print('[Page Sent][Siren Test/Cancel]')
-	elif unit.lower() == 'help':
-		print(help_msg)
-	else:
-		print("Invalid Unit ID")
+	if valid_id == False:
+		if user_input.lower() == 'help':
+			HELP()
+		else:
+			print("Invalid Unit ID")
+	if valid_id == True:
+		print(f"[Paging][ID: {unit_id}][{unit_name}]")
+		if unit_signal_type.upper() == 'QC2':
+			sent = QC2(unit_tone_a, unit_tone_b)
+			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
+		if unit_signal_type.upper() == 'ST':
+			sent = ST(unit_tone_a)
+			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
+		else:
+			print("Invalid Unit Signaling Type")
 	print("-----------------------------------")
