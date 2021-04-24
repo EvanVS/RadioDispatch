@@ -1,5 +1,6 @@
 import winsound, csv, time, serial
-
+import numpy as np
+import sounddevice as sd
 
 # https://github.com/EvanVS/RadioDispatch
 
@@ -8,15 +9,41 @@ import winsound, csv, time, serial
 QC2_Tone_A_Duration = 1000 # ms (Default: 1000ms)
 QC2_Tone_B_Duration = 3000 # ms (Default: 3000ms)
 
-DTMF_Tone_Interval = 25 # ms (Default: 25ms)
-DTMF_Tone_Duration = 50 # ms (Default: 50ms)
-
 ST_Tone_Duration = 3000 # ms (Default: 3000ms)
 
 PTT_COM_Port = 'VOX' # Set as 'VOX' for no PTT control. Set as 'COM#' with # being the COM Port number.
 PTT_COM_Pin = 'RTS' # RTS or DTR pin for PTT Control
 
 # ----------< Configuration >----------
+
+low_freq = [697, 770, 852, 941]
+high_freq = [1209, 1336, 1477, 1633]
+
+# "digit": [low_freq, high_freq]
+digits_tones = \
+{ "1": [0, 0],
+  "2": [0, 1],
+  "3": [0, 2],
+  "A": [0, 3],
+  "4": [1, 0],
+  "5": [1, 1],
+  "6": [1, 2],
+  "B": [1, 3],
+  "7": [2, 0],
+  "8": [2, 1],
+  "9": [2, 2],
+  "C": [2, 3],
+  "*": [3, 0],
+  "0": [3, 1],
+  "#": [3, 2],
+  "D": [3, 3]
+}
+
+valid_digits = "0123456789*#ABCD"
+
+duration = 0.5
+volume = 0.5
+fs = 44100 # sampling rate
 
 print('\n-----------------------------------')
 print('KJ7BRE Communications Paging System')
@@ -52,10 +79,24 @@ def ST(A): # Single Tone
 	PTT(False)
 	return True
 
-def DTMF(str): # Dual Tone Multi Frequency
-	PTT(True)
-	PTT(False)
-	return True
+def DTMF(x): # Dual Tone Multi Frequency
+	x = str(x)
+	digits = list(x.replace(" ",""))
+	if(all(d in valid_digits for d in digits)):
+		PTT(True)
+		for i in digits:
+			f1 = low_freq[digits_tones[i][0]]
+			f2 = high_freq[digits_tones[i][1]]
+			s1 = np.sin(2*np.pi*np.arange(fs*duration)*f1/fs)
+			s2 = np.sin(2*np.pi*np.arange(fs*duration)*f2/fs)
+
+			sd.play(s1*volume + s2*volume)
+			time.sleep(.5)
+		PTT(False)
+		return True
+	else:
+		print("Invalid DTMF String")
+		return False
 
 def UNIT(x):
 	global unit_id
@@ -72,9 +113,10 @@ def UNIT(x):
 					unit_name = unit[1]
 					unit_signal_type = unit[2]
 					unit_tone_a = unit[3]
-					unit_tone_b = unit[4]
 					unit_tone_a = int(unit_tone_a)
-					unit_tone_b = int(unit_tone_b)
+					if unit_signal_type.upper() == 'QC2':
+						unit_tone_b = unit[4]
+						unit_tone_b = int(unit_tone_b)
 					return True
 			return False
 	return False
@@ -111,6 +153,9 @@ while True:
 			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
 		if unit_signal_type.upper() == 'ST':
 			sent = ST(unit_tone_a)
+			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
+		if unit_signal_type.upper() == 'DTMF':
+			sent = DTMF(unit_tone_a)
 			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
 		else:
 			print("Invalid Unit Signaling Type")
