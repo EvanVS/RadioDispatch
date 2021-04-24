@@ -47,7 +47,7 @@ fs = 44100 # sampling rate
 
 print('\n-----------------------------------')
 print('KJ7BRE Communications Paging System')
-print('Version: 0.92     github.com/EvanVS')
+print('Version: 0.93     github.com/EvanVS')
 print('-----------------------------------\n')
 
 
