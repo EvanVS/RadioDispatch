@@ -47,7 +47,7 @@ fs = 44100 # sampling rate
 
 print('\n-----------------------------------')
 print('KJ7BRE Communications Paging System')
-print('Version: 0.93     github.com/EvanVS')
+print('Version: 0.94     github.com/EvanVS')
 print('-----------------------------------\n')
 
 
@@ -68,14 +68,14 @@ def PTT(state): # Transmiter Control
 
 def QC2(A,B): # Quick Call II (2-Tone)
 	PTT(True)
-	winsound.Beep(A, QC2_Tone_A_Duration)
-	winsound.Beep(B, QC2_Tone_B_Duration)
+	winsound.Beep(int(A), QC2_Tone_A_Duration)
+	winsound.Beep(int(B), QC2_Tone_B_Duration)
 	PTT(False)
 	return True
 
 def ST(A): # Single Tone
 	PTT(True)
-	winsound.Beep(A, ST_Tone_Duration)
+	winsound.Beep(int(A), ST_Tone_Duration)
 	PTT(False)
 	return True
 
@@ -113,10 +113,8 @@ def UNIT(x):
 					unit_name = unit[1]
 					unit_signal_type = unit[2]
 					unit_tone_a = unit[3]
-					unit_tone_a = int(unit_tone_a)
 					if unit_signal_type.upper() == 'QC2':
 						unit_tone_b = unit[4]
-						unit_tone_b = int(unit_tone_b)
 					return True
 			return False
 	return False
