@@ -2,7 +2,16 @@ import winsound, csv, time, serial
 import numpy as np
 import sounddevice as sd
 
-# https://github.com/EvanVS/RadioDispatch
+
+#   _____           _ _       _____  _                 _       _     
+#  |  __ \         | (_)     |  __ \(_)               | |     | |    
+#  | |__) |__ _  __| |_  ___ | |  | |_ ___ _ __   __ _| |_ ___| |__  
+#  |  _  // _` |/ _` | |/ _ \| |  | | / __| '_ \ / _` | __/ __| '_ \ 
+#  | | \ \ (_| | (_| | | (_) | |__| | \__ \ |_) | (_| | || (__| | | |
+#  |_|  \_\__,_|\__,_|_|\___/|_____/|_|___/ .__/ \__,_|\__\___|_| |_|
+#                                         | |                        
+# https://github.com/EvanVS/RadioDispatch |_|           Version: 0.94
+
 
 # ----------< Configuration >----------
 
@@ -15,6 +24,7 @@ PTT_COM_Port = 'VOX' # Set as 'VOX' for no PTT control. Set as 'COM#' with # bei
 PTT_COM_Pin = 'RTS' # RTS or DTR pin for PTT Control
 
 # ----------< Configuration >----------
+
 
 low_freq = [697, 770, 852, 941]
 high_freq = [1209, 1336, 1477, 1633]
@@ -41,7 +51,7 @@ digits_tones = \
 
 valid_digits = "0123456789*#ABCD"
 
-duration = 0.5
+duration = 0.2
 volume = 0.5
 fs = 44100 # sampling rate
 
@@ -49,7 +59,6 @@ print('\n-----------------------------------')
 print('KJ7BRE Communications Paging System')
 print('Version: 0.94     github.com/EvanVS')
 print('-----------------------------------\n')
-
 
 if PTT_COM_Port.upper() != 'VOX':
 	ser = serial.Serial('COM5')
@@ -91,7 +100,7 @@ def DTMF(x): # Dual Tone Multi Frequency
 			s2 = np.sin(2*np.pi*np.arange(fs*duration)*f2/fs)
 
 			sd.play(s1*volume + s2*volume)
-			time.sleep(.5)
+			time.sleep(duration)
 		PTT(False)
 		return True
 	else:
@@ -132,7 +141,6 @@ def HELP():
 			unit_tone_b = unit[4]
 			print(f'[ID: {unit_id}][Name: {unit_name}]')
 
-
 while True:
 	sent = False
 	print("Command or Unit ID:")
@@ -144,6 +152,7 @@ while True:
 			HELP()
 		else:
 			print("Invalid Unit ID")
+	
 	if valid_id == True:
 		print(f"[Paging][ID: {unit_id}][{unit_name}]")
 		if unit_signal_type.upper() == 'QC2':
