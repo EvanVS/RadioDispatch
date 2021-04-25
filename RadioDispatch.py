@@ -10,7 +10,7 @@ import sounddevice as sd
 #  | | \ \ (_| | (_| | | (_) | |__| | \__ \ |_) | (_| | || (__| | | |
 #  |_|  \_\__,_|\__,_|_|\___/|_____/|_|___/ .__/ \__,_|\__\___|_| |_|
 #                                         | |                        
-# https://github.com/EvanVS/RadioDispatch |_|           Version: 0.94
+# https://github.com/EvanVS/RadioDispatch |_|           Version: 0.95
 
 
 # ----------< Configuration >----------
@@ -57,7 +57,7 @@ fs = 44100 # sampling rate
 
 print('\n-----------------------------------')
 print('KJ7BRE Communications Paging System')
-print('Version: 0.94     github.com/EvanVS')
+print('Version: 0.95     github.com/EvanVS')
 print('-----------------------------------\n')
 
 if PTT_COM_Port.upper() != 'VOX':
