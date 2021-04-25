@@ -158,10 +158,10 @@ while True:
 		if unit_signal_type.upper() == 'QC2':
 			sent = QC2(unit_tone_a, unit_tone_b)
 			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
-		if unit_signal_type.upper() == 'ST':
+		elif unit_signal_type.upper() == 'ST':
 			sent = ST(unit_tone_a)
 			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
-		if unit_signal_type.upper() == 'DTMF':
+		elif unit_signal_type.upper() == 'DTMF':
 			sent = DTMF(unit_tone_a)
 			print(f'[Page Sent][Unit {unit_id}][{unit_name}]')
 		else:
